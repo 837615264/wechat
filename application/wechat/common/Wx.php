@@ -64,7 +64,8 @@ class Wx{
         sort($array, SORT_STRING);
         $str = implode($array);
         $sha1_str=sha1($str);
-        Log::write(json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
+        $log = new Log('wechat');
+        $log->write(json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
         if($sha1_str==$signature)
         {
             return true;
