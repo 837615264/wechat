@@ -168,7 +168,7 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
-        file_put_contents('./fanyi',$tmpInfo.'~'.$url);
+        file_put_contents('./curl',$tmpInfo);
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
@@ -734,7 +734,7 @@ class Wx{
         $appkey='7b1c47448c5892ba';     //appkey
         $key='D4xLwfEWN4coQXswgvMtBdEDC37Y7FPP';    //密钥
         $salt=rand(10000,99999);
-        $time=time();
+        $time=strtotime("now");
 
         $len = mb_strlen($content,'utf-8');
         $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
