@@ -39,6 +39,7 @@ class Wx{
         $echoStr=$_GET['echostr'];
         if($this->checkSignature())
         {
+            file_put_contents('./log',json_encode($_GET).PHP_EOL.$echoStr.PHP_EOL);
             echo $echoStr;
             exit;
         }
@@ -65,7 +66,6 @@ class Wx{
         $sha1_str=sha1($str);
         if($sha1_str==$signature)
         {
-            file_put_contents('./log',json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
             return true;
         }else{
             return false;
