@@ -736,6 +736,7 @@ class Wx{
         $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
         $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
         $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
+        file_put_contents('./fanyi',$url);
         $result=$this->curl($url,'GET');
         $result=json_decode($result,true);
         if(isset($result['translation'][0])&&!isset($result['basic']['uk-phonetic'])&&$status)
