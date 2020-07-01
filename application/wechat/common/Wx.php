@@ -139,6 +139,7 @@ class Wx{
      * @return mixed|string
      */
     function  curl($url,$method,$data=array(),$setcookie=false,$cookie_file=false){
+        $url = urlencode($url);
         $ch = curl_init();//1.初始化
         curl_setopt($ch, CURLOPT_URL, $url); //2.请求地址
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);//3.请求方式
@@ -169,7 +170,7 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
-        file_put_contents('./fanyi',curl_error($ch).'|');
+        file_put_contents('./fanyi',curl_error($tmpInfo).'~');
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
