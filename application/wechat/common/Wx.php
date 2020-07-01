@@ -1,9 +1,9 @@
 <?php
 namespace app\wechat\common;
+define('TOKEN','rupan');
 class Wx{
     private $appid;
     private $appsecret;
-    const TOKEN = 'rupan';
 
     function __construct($arr=array())
     {
@@ -51,14 +51,14 @@ class Wx{
      */
     public function checkSignature()
     {
-        if(!defined(self::TOKEN))
+        if(!defined('TOKEN'))
         {
             throw new Exception('TOKEN is not defined!');
         }
         $signature=$_GET['signature'];      //微信加密签名
         $timestamp=$_GET['timestamp'];      //时间戳
         $nonce=$_GET['nonce'];              //随机数
-        $token=self::TOKEN;
+        $token=TOKEN;
         $array = array($token, $timestamp, $nonce);
         sort($array, SORT_STRING);
         $str = implode($array);
