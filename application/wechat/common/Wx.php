@@ -535,21 +535,9 @@ class Wx{
                 <PicUrl><![CDATA[%s]]></PicUrl>
                 <Url><![CDATA[%s]]></Url>
                 </item>
-                <item>
-                <Title><![CDATA[%s]]></Title>
-                <Description><![CDATA[%s]]></Description>
-                <PicUrl><![CDATA[%s]]></PicUrl>
-                <Url><![CDATA[%s]]></Url>
-                </item>
-                <item>
-                <Title><![CDATA[%s]]></Title>
-                <Description><![CDATA[%s]]></Description>
-                <PicUrl><![CDATA[%s]]></PicUrl>
-                <Url><![CDATA[%s]]></Url>
-                </item>
                 </Articles>
                 </xml>';
-        $mapTpl=sprintf($mapTpl,$toUser,$fromUser,$time,3,"{$label}附近的酒店","{$label}附近的酒店",'http://wx.bilibilii.cn/hotel.jpg',$urls['hotel'],"{$label}附近的银行","{$label}附近的银行",'http://wx.bilibilii.cn/bank.jpg',$urls['bank'],"{$label}附近的医院","{$label}附近的医院",'http://wx.bilibilii.cn/hospital.jpg',$urls['hospital']);
+        $mapTpl=sprintf($mapTpl,$toUser,$fromUser,$time,1,"{$label}附近的酒店","{$label}附近的酒店",'http://wx.51neko.com/static/img/hotel.jpg',$urls['hotel']);
         echo $mapTpl;
     }
 
