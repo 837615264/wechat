@@ -1,5 +1,6 @@
 <?php
 namespace app\wechat\common;
+use think\Log;
 define('TOKEN','rupan');
 class Wx{
     private $appid;
@@ -63,6 +64,7 @@ class Wx{
         sort($array, SORT_STRING);
         $str = implode($array);
         $sha1_str=sha1($str);
+        Log::write(json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
         if($sha1_str==$signature)
         {
             return true;
