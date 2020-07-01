@@ -645,9 +645,9 @@ class Wx{
         //音乐描述
         $description='这里是简介';
         //音乐地址
-        $musicUrl='http://wx.bilibilii.cn/music.mp3';
+        $musicUrl='http://wx.51neko.com/static/music/music.mp3';
         //高质量音乐地址
-        $HQ_musicUrl='http://wx.bilibilii.cn/music.mp3';
+        $HQ_musicUrl='http://wx.51neko.com/music/music.mp3';
         $musicTpl='<xml>
         <ToUserName><![CDATA[%s]]></ToUserName>
         <FromUserName><![CDATA[%s]]></FromUserName>
