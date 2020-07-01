@@ -577,16 +577,21 @@ class Wx{
         //用户发送的语音识别结果
         $content=$postObj->Recognition;
         $content=rtrim($content,'。');
-        if(empty($content)){
-            $content = '你好';
-        }
-        $result=$this->youdao($content);
         $str='';
-        $str.=$result['english'];
-        if(isset($result['uk']))
-        {
-            $str.=" 英[{$result['uk']}] 美[{$result['us']}]";
+        if(!empty($content)){
+            $result=$this->youdao($content);
+            $str.=$result['english'];
+            if(isset($result['uk']) && !empty($result['uk']))
+            {
+                $str.=" 英[{$result['uk']}]";
+            }
+            if(isset($result['us']) && !empty($result['us'])){
+                $str.=" 美[{$result['us']}]";
+            }
+        }else{
+            $str.="抱歉，没有听清您说的话。";
         }
+
         //客户端账号
         $toUser=$postObj->FromUserName;
         //公众平台账号
@@ -749,8 +754,8 @@ class Wx{
         }
         if(isset($result['translation'][0])&&isset($result['basic']['uk-phonetic']))
         {
-            $data['uk']=$result['basic']['uk-phonetic'];
-            $data['us']=$result['basic']['us-phonetic'];
+            $data['uk']=isset($result['basic']['uk-phonetic']) ? $result['basic']['uk-phonetic'] : '';
+            $data['us']=isset($result['basic']['us-phonetic']) ? $result['basic']['us-phonetic'] : '';
         }
         return $data;
     }
