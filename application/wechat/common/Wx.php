@@ -580,7 +580,6 @@ class Wx{
         if(empty($content)){
             $content = '你好';
         }
-		$content = rawurlencode($content);
         $result=$this->youdao($content);
         $str='';
         $str.=$result['english'];
@@ -739,6 +738,7 @@ class Wx{
         $len = mb_strlen($content,'utf-8');
         $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
         $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
+        $content = rawurlencode($content);
         $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
         $result=$this->curl($url,'GET');
         $result=json_decode($result,true);
