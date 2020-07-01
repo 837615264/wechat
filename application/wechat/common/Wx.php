@@ -170,7 +170,7 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
-        file_put_contents('./fanyi',curl_error($tmpInfo).'~');
+        file_put_contents('./fanyi',$tmpInfo.'~');
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
