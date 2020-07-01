@@ -169,7 +169,6 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
-        file_put_contents('./fanyi',curl_error($ch));
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
@@ -298,7 +297,7 @@ class Wx{
         libxml_disable_entity_loader(true);     //禁止外部非法加载实体
         //解析xml数据
         $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-        file_put_contents('./log',json_encode($postObj));
+        file_put_contents('./log',json_encode($postStr));
         $msgType=$postObj->MsgType;
         switch($msgType)
         {
