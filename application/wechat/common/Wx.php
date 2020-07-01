@@ -293,7 +293,7 @@ class Wx{
     public function responseMsg()
     {
         //接收客户端请求
-        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
+        $postStr = file_get_contents('php://input');
         libxml_disable_entity_loader(true);     //禁止外部非法加载实体
         //解析xml数据
         $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
