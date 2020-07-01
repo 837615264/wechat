@@ -169,6 +169,7 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
+        file_put_contents('./fanyi',json_encode($tmpInfo));
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
@@ -740,7 +741,6 @@ class Wx{
         $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
         $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
         $result=$this->curl($url,'GET');
-        file_put_contents('./fanyi','123'.$result);
         $result=json_decode($result,true);
         if(isset($result['translation'][0])&&!isset($result['basic']['uk-phonetic'])&&$status)
         {
