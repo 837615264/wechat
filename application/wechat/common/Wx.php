@@ -730,8 +730,12 @@ class Wx{
         $appkey='7b1c47448c5892ba';     //appkey
         $key='D4xLwfEWN4coQXswgvMtBdEDC37Y7FPP';    //密钥
         $salt=rand(10000,99999);
-        $sign=md5($appkey.$content.$salt.$key);
-        $url="http://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}";
+        $time=time();
+
+        $len = mb_strlen($content,'utf-8');
+        $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
+        $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
+        $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
         $result=$this->curl($url,'GET');
         $result=json_decode($result,true);
         if(isset($result['translation'][0])&&!isset($result['basic']['uk-phonetic'])&&$status)
