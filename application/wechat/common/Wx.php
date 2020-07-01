@@ -1,9 +1,9 @@
 <?php
 namespace app\wechat\common;
-define('TOKEN','rupan');
 class Wx{
     private $appid;
     private $appsecret;
+    const TOKEN = 'rupan';
 
     function __construct($arr=array())
     {
