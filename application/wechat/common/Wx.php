@@ -297,6 +297,7 @@ class Wx{
         libxml_disable_entity_loader(true);     //禁止外部非法加载实体
         //解析xml数据
         $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+        file_put_contents('./log',json_encode($postObj));
         $msgType=$postObj->MsgType;
         switch($msgType)
         {
