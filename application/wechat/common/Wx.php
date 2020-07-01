@@ -754,9 +754,9 @@ class Wx{
      */
     public function baiduMap($x,$y)
     {
-        $hotelUrl="http://api.map.baidu.com/place/search?query=酒店&location={$x},{$y}&radius={$x},{$y}&output=html&src=rupan";
-        $bankUrl="http://api.map.baidu.com/place/search?query=银行&location={$x},{$y}&radius={$x},{$y}&output=html&src=rupan";
-        $hospitalUrl="http://api.map.baidu.com/place/search?query=医院&location={$x},{$y}&radius={$x},{$y}&output=html&src=rupan";
+        $hotelUrl="http://api.map.baidu.com/place/search?query=酒店&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
+        $bankUrl="http://api.map.baidu.com/place/search?query=银行&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
+        $hospitalUrl="http://api.map.baidu.com/place/search?query=医院&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
         return ['hotel'=>$hotelUrl,'bank'=>$bankUrl,'hospital'=>$hospitalUrl];
     }
 
