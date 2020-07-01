@@ -6,7 +6,7 @@ class Index
     public function index()
     {
         $wx = new Wx();
-        $wx->createMenu();
+        $wx->responseMsg();
     }
 
     public function hello($name = 'ThinkPHP5')
