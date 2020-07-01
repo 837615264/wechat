@@ -63,9 +63,9 @@ class Wx{
         sort($array, SORT_STRING);
         $str = implode($array);
         $sha1_str=sha1($str);
-        file_put_contents('./log',json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
         if($sha1_str==$signature)
         {
+            file_put_contents('./log',json_encode($_GET).PHP_EOL.$sha1_str.PHP_EOL);
             return true;
         }else{
             return false;
