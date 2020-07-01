@@ -197,8 +197,8 @@ class Wx{
                    "sub_button":[
                    {
                        "type":"view",
-                       "name":"鲁邦博客",
-                       "url":"http://www.bilibilii.cn/"
+                       "name":"我的博客",
+                       "url":"http://blog.51neko.con/"
                     },
                     {
                        "type":"location_select",
