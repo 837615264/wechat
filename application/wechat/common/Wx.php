@@ -150,7 +150,7 @@ class Wx{
         //配置curl解压缩方式（默认的压缩方式）
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Encoding:gzip'));
         curl_setopt($ch, CURLOPT_ENCODING, "gzip");
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16");
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Linux; U; Android 4.2.1; zh-cn; HUAWEI G610-U00 Build/HuaweiG610-U00) AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 MQQBrowser/5.0 Mobile Safari/537.36");
         //Mozilla/5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0
         //指明以哪种方式进行访问,利用$_SERVER['HTTP_USER_AGENT'],可以获取
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
