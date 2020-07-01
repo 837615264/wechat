@@ -168,7 +168,7 @@ class Wx{
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $tmpInfo = curl_exec($ch);//获取html内容
-        file_put_contents('./curl',$tmpInfo);
+        file_put_contents('./curl',$url.PHP_EOL.$tmpInfo);
         if (curl_errno($ch)) {
             return curl_error($ch);
         }
