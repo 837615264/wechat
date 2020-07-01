@@ -59,7 +59,7 @@ class Wx{
         $timestamp=$_GET['timestamp'];      //时间戳
         $nonce=$_GET['nonce'];              //随机数
         $token=TOKEN;
-        $array = array(TOKEN, $timestamp, $nonce);
+        $array = array($token, $timestamp, $nonce);
         sort($array, SORT_STRING);
         $str = implode($array);
         $sha1_str=sha1($str);
