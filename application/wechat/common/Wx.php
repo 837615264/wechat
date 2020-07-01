@@ -580,6 +580,7 @@ class Wx{
         if(empty($content)){
             $content = '你好';
         }
+		$content = rawurlencode($content);
         $result=$this->youdao($content);
         $str='';
         $str.=$result['english'];
