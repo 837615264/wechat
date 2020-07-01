@@ -577,6 +577,9 @@ class Wx{
         //用户发送的语音识别结果
         $content=$postObj->Recognition;
         $content=rtrim($content,'。');
+        if(empty($content)){
+            $content = '你好';
+        }
         $result=$this->youdao($content);
         $str='';
         $str.=$result['english'];
