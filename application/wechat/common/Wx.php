@@ -754,6 +754,7 @@ class Wx{
         }
         if(isset($result['translation'][0])&&isset($result['basic']['uk-phonetic']))
         {
+            $data['english']=$result['translation'][0];
             $data['uk']=isset($result['basic']['uk-phonetic']) ? $result['basic']['uk-phonetic'] : '';
             $data['us']=isset($result['basic']['us-phonetic']) ? $result['basic']['us-phonetic'] : '';
         }
