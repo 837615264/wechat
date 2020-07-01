@@ -39,7 +39,6 @@ class Wx{
         $echoStr=$_GET['echostr'];
         if($this->checkSignature())
         {
-            file_put_contents('./log',json_encode($_GET).PHP_EOL.$echoStr.PHP_EOL);
             echo $echoStr;
             exit;
         }
