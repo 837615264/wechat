@@ -7,8 +7,8 @@ class Wx{
 
     function __construct($arr=array())
     {
-        $this->appid=isset($arr['appid'])?$arr['appid']:'wx10f80990406db44f';
-        $this->appsecret=isset($arr['appsecret'])?$arr['appsecret']:'4a896d9abe73059bb60b3d13d0398235';
+        $this->appid=isset($arr['appid'])?$arr['appid']:'wx73b4a58dbcdf30ed';
+        $this->appsecret=isset($arr['appsecret'])?$arr['appsecret']:'bcca006562fdf39fa48c22225b3fce35';
     }
 
     /**
