@@ -30,6 +30,7 @@ class Wx{
         }
     }
 
+    /******************************************************************微信接入验证START******************************************************************/
     /**
      * 微信接入验证
      * @throws Exception
@@ -70,7 +71,7 @@ class Wx{
             return false;
         }
     }
-
+    /******************************************************************微信接入验证END********************************************************************/
 
     /******************************************************网页微信授权Start********************************************************/
 
@@ -302,13 +303,25 @@ class Wx{
         switch($msgType)
         {
             case 'event':
-                if($postObj->Event=='subscribe')    //扫码关注公众号事件
+                if($postObj->Event == 'subscribe' or $postObj->Event == 'SCAN')    //扫码关注公众号事件
                 {
                     $this->eventForSubscribe($postObj);
                 }
-                if($postObj->Event=='LOCATION')
+                else if($postObj->Event == 'unsubscribe')       //取消关注事件
+                {
+                    $this->eventForUnsubscribe($postObj);
+                }
+                else if($postObj->Event == 'LOCATION')
                 {
                     $this->eventForLocation($postObj);      //获取用户地理位置事件
+                }
+                else if($postObj->Event == 'CLICK')
+                {
+                    $this->eventForClick($postObj);     //点击菜单拉取消息时的事件
+                }
+                else if($postObj->Event == 'VIEW')
+                {
+                    $this->eventForView($postObj);     //点击菜单跳转链接时的事件
                 }
                 break;
             case 'text':
@@ -335,16 +348,137 @@ class Wx{
         }
     }
 
+    /*************************************************************接收普通消息START****************************************************************/
+
+    /**
+     * 接收文本消息
+     * @param $postObj
+     */
+    public function _doText($postObj)
+    {
+        $content = trim($postObj->Content);
+        if(mb_substr($content,0,2,'utf-8') == '附近')
+        {
+            //$content = mb_substr($content,2,mb_strlen($content,'utf-8'),'utf-8');
+            $replyContent = $this->turingRobot($content);     //调用图灵机器人进行回复
+            $this->replyText($postObj , $replyContent);
+        }
+        else{
+            $replyContent = $this->turingRobot($content);     //调用图灵机器人进行回复
+            $this->replyText($postObj , $replyContent);
+        }
+    }
+
+    /**
+     * 接收图片消息
+     * @param $postObj
+     */
+    public function _doImage($postObj)
+    {
+        $toUser=$postObj->FromUserName;     //客户端账号
+        $fromUser=$postObj->ToUserName;     //公众平台账号
+        $time=time();       //当前时间
+        $url=$postObj->PicUrl;      //图片地址
+        $this->replyText($postObj , '斗图什么的还不擅长哦');
+    }
+
+    /**
+     * 接收语音消息
+     * @param $postObj
+     */
+    public function _doVoice($postObj)
+    {
+        $content = $postObj->Recognition;       //用户发送的语音识别结果
+        $content = rtrim($content,'。');
+        $str = '';
+        if(!empty($content)){
+            $result = $this->youdao($content);
+            $str.= $result['english'];
+            if(isset($result['uk']) && !empty($result['uk']))
+            {
+                $str .= " 英[{$result['uk']}]";
+            }
+            if(isset($result['us']) && !empty($result['us'])){
+                $str .= " 美[{$result['us']}]";
+            }
+        }else{
+            $str .= "抱歉，没有听清您说的话。";
+        }
+        $this->replyText($postObj , $str);
+    }
+
+    /**
+     * 接收视频消息
+     * @param $postObj
+     */
+    public function _doVideo($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
+        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
+        $this->replyText($postObj , '流量告急，不要发视频啦！');
+    }
+
+    /**
+     * 接收小视频消息
+     * @param $postObj
+     */
+    public function _doShortVideo($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
+        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
+        $this->replyText($postObj , '流量告急，不要发视频啦！');
+    }
+
+    /**
+     * 接收位置信息
+     * @param $postObj
+     */
+    public function _doLocation($postObj)
+    {
+        $x = $postObj->Location_X;        //纬度
+        $y = $postObj->Location_Y;        //经度
+        $scale = $postObj->Scale;       //地图缩放大小
+        $label = $postObj->Label;       //地理位置信息
+        $urls=$this->baiduMap($x,$y);
+        $this->replyLocation($postObj,$urls);
+    }
+
+    /**
+     * 接收链接消息
+     * @param $postObj
+     */
+    public function _doLink($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $title = $postObj->Title;       //消息标题
+        $description = $postObj->Description;       //消息描述
+        $url = $postObj->Url;       //消息链接
+        $this->replyText($postObj , '主人说了，不可以打开不明链接！');
+    }
+    /*************************************************************接收普通消息END******************************************************************/
+
+    /*************************************************************接收事件推送START******************************************************************/
     /**
      * 扫码关注公众号事件
      * @param $postObj
      */
     public function eventForSubscribe($postObj)
     {
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
+        $toUser = $postObj->FromUserName;       //客户端账号
+        $fromUser = $postObj->ToUserName;       //公众平台账号
+        $createTime = $postObj->CreateTime;     //消息创建时间 （整型）
+        $eventKey = isset($postObj->EventKey) ? $postObj->EventKey : '';        //事件KEY值，qrscene_为前缀，后面为二维码的参数值
+        $ticket = isset($postObj->Ticket) ? $postObj->Ticket : '';      //二维码的ticket，可用来换取二维码图片
+        if($eventKey && $postObj->Event == 'SCAN'){         //扫描带参数二维码,用户已关注时的事件推送
+            //todo
+        }
+        else if($eventKey && $postObj->Event == 'subscribe'){       //扫描带参数二维码,用户未关注时，进行关注后的事件推送
+            //todo
+        }else{      //扫描未带参数二维码关注
+            //todo
+        }
         //当前时间
         $time=time();
         //回复内容
@@ -361,42 +495,13 @@ class Wx{
     }
 
     /**
-     * 接收图片消息事件
+     * 取消关注公众号事件
      * @param $postObj
      */
-    public function _doImage($postObj)
-    {
-        $this->setUserPhoto($postObj);
-    }
-
-    /**
-     * 上传图片至用户相册
-     * @param $postObj
-     */
-    public function setUserPhoto($postObj)
-    {
-        //客户端账号voice
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        //图片地址
-        $url=$postObj->PicUrl;
-        //$pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
-        //$sql="INSERT INTO photo VALUES ('{$toUser}','{$url}')";
-        //$pdo->exec('set names utf8');
-        //$pdo->exec($sql);
-        $content="斗图什么的还不擅长哦";
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$content);
-        echo $textTpl;
+    public function eventForUnsubscribe($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $createTime = $postObj->CreateTime;       //消息创建时间 （整型）
     }
 
     /**
@@ -405,107 +510,211 @@ class Wx{
      */
     public function eventForLocation($postObj)
     {
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //纬度
-        $latitude=$postObj->Latitude;
-        //经度
-        $longitude=$postObj->Longitude;
-        /*******************************数据库操作*************************************/
-        $pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
-        $sql="SELECT openid FROM location WHERE openid='{$toUser}'";
-        $data=$pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
-        if(empty($data))
-        {
-            $sql="INSERT INTO location VALUES ('{$latitude}','{$longitude}','{$toUser}')";
-            $pdo->exec('set names utf8');
-            $pdo->exec($sql);
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $createTime = $postObj->CreateTime;       //消息创建时间 （整型）
+        $latitude = $postObj->Latitude;       //纬度
+        $longitude = $postObj->Longitude;     //经度
+        $precision = $postObj->Precision;       //精度
+    }
+
+    /**
+     * 点击菜单拉取消息时的事件
+     * @param $postObj
+     */
+    public function eventForClick($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $createTime = $postObj->CreateTime;       //消息创建时间 （整型）
+        $eventKey = $postObj->EventKey;     //事件KEY值，与自定义菜单接口中KEY值对应
+    }
+
+    /**
+     * 点击菜单跳转链接时的事件
+     * @param $postObj
+     */
+    public function eventForView($postObj){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $createTime = $postObj->CreateTime;       //消息创建时间 （整型）
+        $eventKey = $postObj->EventKey;     //事件KEY值，设置的跳转URL
+    }
+    /*************************************************************接收事件推送END********************************************************************/
+
+    /*************************************************************被动回复用户消息START********************************************************************/
+    /**
+     * 回复文本消息
+     * @param $postObj
+     * @param $replyContent     //回复的内容
+     */
+    public function replyText($postObj , $replyContent)
+    {
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $time = time();       //消息创建时间 （整型）
+        $textTpl =
+        '<xml>
+        <ToUserName><![CDATA[%s]]></ToUserName>
+        <FromUserName><![CDATA[%s]]></FromUserName>
+        <CreateTime>%s</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[%s]]></Content>
+        </xml>';
+        $textTpl = sprintf($textTpl,$toUser,$fromUser,$time,$replyContent);
+        echo $textTpl;
+    }
+
+    /**
+     * 回复图片消息
+     * @param $postObj
+     * @param $mediaId 通过素材管理中的接口上传多媒体文件，得到的id
+     */
+    function replyImage($postObj , $mediaId)
+    {
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $time = time();     //消息创建时间戳 （整型）
+        $imageTpl =
+                '<xml>
+                <ToUserName><![CDATA[%s]]></ToUserName>
+                <FromUserName><![CDATA[%s]]></FromUserName>
+                <CreateTime>%s</CreateTime>
+                <MsgType><![CDATA[image]]></MsgType>
+                <Image>
+                <MediaId><![CDATA[%s]]></MediaId>
+                </Image>
+                </xml>';
+        $imageTpl = sprintf($imageTpl,$toUser,$fromUser,$time,$mediaId);
+        echo $imageTpl;
+    }
+
+    /**
+     * 回复语音消息
+     * @param $postObj
+     * @param $mediaId 通过素材管理中的接口上传多媒体文件，得到的id
+     */
+    public function replyVoice($postObj , $mediaId){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $time = time();     //消息创建时间戳 （整型）
+        $voiceTpl =
+            '<xml>
+                <ToUserName><![CDATA[%s]]></ToUserName>
+                <FromUserName><![CDATA[%s]]></FromUserName>
+                <CreateTime>%s</CreateTime>
+                <MsgType><![CDATA[voice]]></MsgType>
+                <Voice>
+                <MediaId><![CDATA[%s]]></MediaId>
+                </Voice>
+                </xml>';
+        $voiceTpl = sprintf($voiceTpl,$toUser,$fromUser,$time,$mediaId);
+        echo $voiceTpl;
+    }
+
+    /**
+     * 回复视频消息
+     * @param $postObj
+     * @param $mediaId 通过素材管理中的接口上传多媒体文件，得到的id
+     * @param $title 视频消息的标题
+     * @param $description 视频消息的描述
+     */
+    public function replyVideo($postObj , $mediaId , $title , $description){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $time = time();     //消息创建时间戳 （整型）
+        $videoTpl =
+            '<xml>
+              <ToUserName><![CDATA[%s]]></ToUserName>
+              <FromUserName><![CDATA[%s]]></FromUserName>
+              <CreateTime>%s</CreateTime>
+              <MsgType><![CDATA[video]]></MsgType>
+              <Video>
+                <MediaId><![CDATA[%s]]></MediaId>
+                <Title><![CDATA[%s]]></Title>
+                <Description><![CDATA[%s]]></Description>
+              </Video>
+            </xml>';
+        $videoTpl = sprintf($videoTpl,$toUser,$fromUser,$time,$mediaId,$title,$description);
+        echo $videoTpl;
+    }
+
+    /**
+     * 回复音乐消息
+     * @param $postObj
+     * @param $thumbMediaId 缩略图的媒体id，通过素材管理中的接口上传多媒体文件，得到的id
+     * @param string $title 音乐标题
+     * @param string $description 音乐描述
+     * @param string $musicUrl 音乐链接
+     * @param string $HQ_musicUrl 高质量音乐链接，WIFI环境优先使用该链接播放音乐
+     */
+    public function replyMusic($postObj , $thumbMediaId , $title = '' , $description = '' , $musicUrl = '' , $HQ_musicUrl = ''){
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $time = time();     //消息创建时间戳 （整型）
+        $musicTpl='<xml>
+        <ToUserName><![CDATA[%s]]></ToUserName>
+        <FromUserName><![CDATA[%s]]></FromUserName>
+        <CreateTime>%s</CreateTime>
+        <MsgType><![CDATA[music]]></MsgType>
+        <Music>
+        <Title><![CDATA[%s]]></Title>
+        <Description><![CDATA[%s]]></Description>
+        <MusicUrl><![CDATA[%s]]></MusicUrl>
+        <HQMusicUrl><![CDATA[%s]]></HQMusicUrl>
+        <ThumbMediaId><![CDATA[%s]]></ThumbMediaId>
+        </Music>
+        </xml>';
+        $musicTpl=sprintf($musicTpl,$toUser,$fromUser,$time,$title,$description,$musicUrl,$HQ_musicUrl,$thumbMediaId);
+        echo $musicTpl;
+    }
+
+    /**
+     * 回复图文消息
+     * @param $postObj
+     * @param $articleCount 图文消息个数(当用户发送文本、图片、语音、视频、图文、地理位置这六种消息时，开发者只能回复1条图文消息,其余场景最多可回复8条图文消息)
+     * @param array $data 图文数据(标题title,描述description,链接picUrl,跳转链接url)
+     */
+    public function replyNews($postObj , $articleCount = 1 , $data = array())
+    {
+        $toUser = $postObj->FromUserName;     //客户端账号
+        $fromUser = $postObj->ToUserName;     //公众平台账号
+        $msgType = $postObj->MsgType;       //消息类型
+        $time = time();       //消息创建时间戳 （整型）
+        $typeOne = ['text' , 'image', 'voice', 'video' , 'location'];
+        if(in_array($msgType , $typeOne)){
+            $articleCount = 1;
         }else{
-            $sql="UPDATE location SET latitude='{$latitude}',longitude='{$longitude}' WHERE openid='{$toUser}'";
-            $pdo->exec('set names utf8');
-            $pdo->exec($sql);
+            $articleCount = $articleCount > 8 ? 8 : $articleCount;
         }
-        /*************************************TheEnd************************************/
-    }
 
-    /**
-     * 接收文本消息
-     * @param $postObj
-     */
-    public function _doText($postObj)
-    {
-        $content=$postObj->Content;
-        if($content=='音乐')
-        {
-            $this->replyMusic($postObj);
-        }
-        if($content=='单图文')
-        {
-            $this->replyNews($postObj,1);
-        }
-        if($content=='多图文')
-        {
-            $this->replyNews($postObj,3);
-        }
-        if($content=='图片')
-        {
-            $this->replyImage($postObj);
-        }
-        if(mb_substr($content,0,2,'utf-8')=='附近')
-        {
-            $content=mb_substr($content,2,mb_strlen($content,'utf-8'),'utf-8');
-            $url=$this->baiduMapSearch($postObj->FromUserName,$content);
-            $this->replyMap($postObj,$content,$url);
-        }
-        $this->replyText($postObj);
-    }
-
-    /**
-     * 回复查询到的地图结果（单图文）
-     * @param $postObj
-     * @param $content
-     * @param $url
-     */
-    public function replyMap($postObj,$content,$url)
-    {
-        //客户端账号voice
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        $mapTpl='<xml>
+        $newsTpl =
+                '<xml>
                 <ToUserName><![CDATA[%s]]></ToUserName>
                 <FromUserName><![CDATA[%s]]></FromUserName>
                 <CreateTime>%s</CreateTime>
                 <MsgType><![CDATA[news]]></MsgType>
                 <ArticleCount>%s</ArticleCount>
-                <Articles>
-                <item>
+                <Articles>%s</Articles>
+                </xml>';
+        $news = '';
+        foreach($data as $k=>$v)
+        {
+            $news .=
+                '<item>
                 <Title><![CDATA[%s]]></Title>
                 <Description><![CDATA[%s]]></Description>
                 <PicUrl><![CDATA[%s]]></PicUrl>
                 <Url><![CDATA[%s]]></Url>
-                </item>
-                </Articles>
-                </xml>';
-        $mapTpl=sprintf($mapTpl,$toUser,$fromUser,$time,1,'附近的'.$content,'','http://wx.bilibilii.cn/map.jpg',$url);
-        echo $mapTpl;
-    }
+                </item>';
+            $news=sprintf($news,$v['title'],$v['description'],$v['picUrl'],$v['url']);
+        }
 
-    /**
-     * 接收位置信息
-     * @param $postObj
-     */
-    public function _doLocation($postObj)
-    {
-        //纬度
-        $x=$postObj->Location_X;
-        //经度
-        $y=$postObj->Location_Y;
-        $urls=$this->baiduMap($x,$y);
-        $this->replyLocation($postObj,$urls);
+        $newsTpl=sprintf($newsTpl,$toUser,$fromUser,$time,$articleCount,$news);
+        echo $newsTpl;
     }
+    /*************************************************************被动回复用户消息END**********************************************************************/
+
+
 
     /**
      * 回复位置信息（图文）
@@ -541,331 +750,7 @@ class Wx{
         echo $mapTpl;
     }
 
-    /**
-     * 回复文本消息
-     * @param $postObj
-     */
-    public function replyText($postObj)
-    {
-        //用户发送的内容
-        $content=$postObj->Content;
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        //回复内容
-        $content=$this->turingRobot($content);
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$content);
-        echo $textTpl;
-    }
 
-    /**
-     * 接收语音消息
-     * @param $postObj
-     */
-    public function _doVoice($postObj)
-    {
-        //用户发送的语音识别结果
-        $content=$postObj->Recognition;
-        $content=rtrim($content,'。');
-        $str='';
-        if(!empty($content)){
-            $result=$this->youdao($content);
-            $str.=$result['english'];
-            if(isset($result['uk']) && !empty($result['uk']))
-            {
-                $str.=" 英[{$result['uk']}]";
-            }
-            if(isset($result['us']) && !empty($result['us'])){
-                $str.=" 美[{$result['us']}]";
-            }
-        }else{
-            $str.="抱歉，没有听清您说的话。";
-        }
-
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
-        echo $textTpl;
-    }
-
-    /**
-     * 接收视频消息
-     * @param $postObj
-     */
-    public function _doVideo($postObj){
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
-        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
-        //当前时间
-        $time=time();
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $str = "流量告急，不要发视频啦！";
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
-        echo $textTpl;
-    }
-
-    /**
-     * 接收小视频消息
-     * @param $postObj
-     */
-    public function _doShortVideo($postObj){
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
-        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
-        //当前时间
-        $time=time();
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $str = "流量告急，不要发视频啦！";
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
-        echo $textTpl;
-    }
-
-    /**
-     * 接收链接消息
-     * @param $postObj
-     */
-    public function _doLink($postObj){
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        $title = $postObj->Title;       //消息标题
-        $description = $postObj->Description;       //消息描述
-        $url = $postObj->Url;       //消息链接
-        //当前时间
-        $time=time();
-        $textTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[%s]]></Content>
-        </xml>';
-        $str = "主人说了，不可以打开不明链接！";
-        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
-        echo $textTpl;
-    }
-
-    /**
-     * 回复图片消息
-     * @param $postObj
-     */
-    function replyImage($postObj)
-    {
-        //用户发送的内容
-        $content=$postObj->Content;
-        //客户端账号
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        $imageTpl='<xml>
-                <ToUserName><![CDATA[%s]]></ToUserName>
-                <FromUserName><![CDATA[%s]]></FromUserName>
-                <CreateTime>%s</CreateTime>
-                <MsgType><![CDATA[image]]></MsgType>
-                <Image>
-                <MediaId><![CDATA[%s]]></MediaId>
-                </Image>
-                </xml>';
-        $imageTpl=sprintf($imageTpl,$toUser,$fromUser,$time,'IqK_JO0Ta85gHQkzOGLSBKN60den6GRSmXr8ap7Eqp75zhjraJKQNjojbGtora5L');
-        echo $imageTpl;
-    }
-
-    /**
-     * 回复音乐消息
-     * @param $postObj
-     */
-    public function replyMusic($postObj)
-    {
-        //客户端账号voice
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        //音乐标题
-        $title='夜上海';
-        //音乐描述
-        $description='这里是简介';
-        //音乐地址
-        $musicUrl='http://wx.51neko.com/static/music/music.mp3';
-        //高质量音乐地址
-        $HQ_musicUrl='http://wx.51neko.com/static/music/music.mp3';
-        $musicTpl='<xml>
-        <ToUserName><![CDATA[%s]]></ToUserName>
-        <FromUserName><![CDATA[%s]]></FromUserName>
-        <CreateTime>%s</CreateTime>
-        <MsgType><![CDATA[music]]></MsgType>
-        <Music>
-        <Title><![CDATA[%s]]></Title>
-        <Description><![CDATA[%s]]></Description>
-        <MusicUrl><![CDATA[%s]]></MusicUrl>
-        <HQMusicUrl><![CDATA[%s]]></HQMusicUrl>
-        </Music>
-        </xml>';
-        $musicTpl=sprintf($musicTpl,$toUser,$fromUser,$time,$title,$description,$musicUrl,$HQ_musicUrl);
-        echo $musicTpl;
-    }
-
-    /**
-     * 回复图文消息
-     * @param $postObj
-     * @param $num  图文数量
-     */
-    public function replyNews($postObj,$num)
-    {
-        //客户端账号voice
-        $toUser=$postObj->FromUserName;
-        //公众平台账号
-        $fromUser=$postObj->ToUserName;
-        //当前时间
-        $time=time();
-        $newsTpl='<xml>
-                <ToUserName><![CDATA[%s]]></ToUserName>
-                <FromUserName><![CDATA[%s]]></FromUserName>
-                <CreateTime>%s</CreateTime>
-                <MsgType><![CDATA[news]]></MsgType>
-                <ArticleCount>%s</ArticleCount>
-                <Articles>%s</Articles>
-                </xml>';
-        /*******************************数据库操作*************************************/
-        $pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
-        $sql="SELECT * FROM news ORDER BY id DESC LIMIT {$num}";
-        $data=$pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-        $news='';
-        foreach($data as $k=>$v)
-        {
-            $news.='<item>
-                <Title><![CDATA[%s]]></Title>
-                <Description><![CDATA[%s]]></Description>
-                <PicUrl><![CDATA[%s]]></PicUrl>
-                <Url><![CDATA[%s]]></Url>
-                </item>';
-            $news=sprintf($news,$v['title'],$v['intro'],$v['img'],$v['url']);
-        }
-        /*************************************TheEnd************************************/
-        $newsTpl=sprintf($newsTpl,$toUser,$fromUser,$time,$num,$news);
-        echo $newsTpl;
-    }
-
-    /**
-     * 图灵机器人
-     * @param $msg
-     */
-    private function turingRobot($msg)
-    {
-        $key='401caa7df7be4a4582667fed405937de';
-        $encode = mb_detect_encoding($msg, array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
-        $info = mb_convert_encoding($msg, 'UTF-8', $encode);
-        $userId=1;
-        $url="http://www.tuling123.com/openapi/api?key={$key}&info={$info}&userid={$userId}";
-        $result=$this->curl($url,'POST');
-        return json_decode($result,true)['text'];
-    }
-
-    /**
-     * 有道翻译
-     * @param $content
-     */
-    public function youdao($content,$status=true)
-    {
-        static $data;
-        $appkey='7b1c47448c5892ba';     //appkey
-        $key='D4xLwfEWN4coQXswgvMtBdEDC37Y7FPP';    //密钥
-        $salt=rand(10000,99999);
-        $time=strtotime("now");
-
-        $len = mb_strlen($content,'utf-8');
-        $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
-        $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
-        $content = rawurlencode($content);
-        $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
-        $result=$this->curl($url,'GET');
-        $result=json_decode($result,true);
-        if(isset($result['translation'][0])&&!isset($result['basic']['uk-phonetic'])&&$status)
-        {
-            $data['english']=$result['translation'][0];
-            $this->youdao($result['translation'][0],false);
-        }
-        if(isset($result['translation'][0])&&isset($result['basic']['uk-phonetic']))
-        {
-            $data['english']=$result['translation'][0];
-            $data['uk']=isset($result['basic']['uk-phonetic']) ? $result['basic']['uk-phonetic'] : '';
-            $data['us']=isset($result['basic']['us-phonetic']) ? $result['basic']['us-phonetic'] : '';
-        }
-        return $data;
-    }
-
-    /**
-     * 百度地图（检索）
-     * @param $msg
-     * @return array
-     */
-    public function baiduMap($x,$y)
-    {
-        $hotelUrl="http://api.map.baidu.com/place/search?query=酒店&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
-        $bankUrl="http://api.map.baidu.com/place/search?query=银行&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
-        $hospitalUrl="http://api.map.baidu.com/place/search?query=医院&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
-        return ['hotel'=>$hotelUrl,'bank'=>$bankUrl,'hospital'=>$hospitalUrl];
-    }
-
-    /**
-     * 百度地图（单条检索）
-     * @param $openid
-     * @param $content
-     * @return string
-     */
-    public function baiduMapSearch($openid,$content)
-    {
-        $pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
-        $sql="SELECT * FROM location WHERE openid='{$openid}'";
-        $xy=$pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
-        $x=$xy['latitude'];     //  纬度
-        $y=$xy['longitude'];        //经度
-        $url="http://api.map.baidu.com/place/search?query={$content}&location={$x},{$y}&radius={$x},{$y}&output=html&src=rupan";
-        return $url;
-    }
 
     /**
      * 获取所有用户的openid
@@ -966,4 +851,69 @@ class Wx{
         $result=$this->curl($url,'POST',$news);
         return json_decode($result,true)['media_id'];
     }
+
+
+
+    /***********************************************************第三方START*************************************************************/
+    /**
+     * 图灵机器人
+     * @param $msg
+     */
+    private function turingRobot($msg)
+    {
+        $key='401caa7df7be4a4582667fed405937de';
+        $encode = mb_detect_encoding($msg, array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
+        $info = mb_convert_encoding($msg, 'UTF-8', $encode);
+        $userId = 1;
+        $url = "http://www.tuling123.com/openapi/api?key={$key}&info={$info}&userid={$userId}";
+        $result = $this->curl($url,'POST');
+        return json_decode($result,true)['text'];
+    }
+
+    /**
+     * 有道翻译
+     * @param $content
+     */
+    public function youdao($content,$status=true)
+    {
+        static $data;
+        $appkey='7b1c47448c5892ba';     //appkey
+        $key='D4xLwfEWN4coQXswgvMtBdEDC37Y7FPP';    //密钥
+        $salt=rand(10000,99999);
+        $time=strtotime("now");
+
+        $len = mb_strlen($content,'utf-8');
+        $input = $len <= 20 ? $content : (mb_substr($content, 0, 10) . $len . mb_substr($content, $len - 10, $len));
+        $sign = hash("sha256", $appkey.$input.$salt.$time.$key);
+        $content = rawurlencode($content);
+        $url="https://openapi.youdao.com/api?q={$content}&from=auto&to=EN&appKey={$appkey}&salt={$salt}&sign={$sign}&signType=v3&curtime={$time}";
+        $result=$this->curl($url,'GET');
+        $result=json_decode($result,true);
+        if(isset($result['translation'][0])&&!isset($result['basic']['uk-phonetic'])&&$status)
+        {
+            $data['english']=$result['translation'][0];
+            $this->youdao($result['translation'][0],false);
+        }
+        if(isset($result['translation'][0])&&isset($result['basic']['uk-phonetic']))
+        {
+            $data['english']=$result['translation'][0];
+            $data['uk']=isset($result['basic']['uk-phonetic']) ? $result['basic']['uk-phonetic'] : '';
+            $data['us']=isset($result['basic']['us-phonetic']) ? $result['basic']['us-phonetic'] : '';
+        }
+        return $data;
+    }
+
+    /**
+     * 百度地图（检索）
+     * @param $msg
+     * @return array
+     */
+    public function baiduMap($x,$y)
+    {
+        $hotelUrl="http://api.map.baidu.com/place/search?query=酒店&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
+        $bankUrl="http://api.map.baidu.com/place/search?query=银行&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
+        $hospitalUrl="http://api.map.baidu.com/place/search?query=医院&location={$x},{$y}&radius={$x},{$y}&output=html&ak=fDzBUTlM1CzfzjVL7ZDExgzOnZMak6QY";
+        return ['hotel'=>$hotelUrl,'bank'=>$bankUrl,'hospital'=>$hospitalUrl];
+    }
+    /***********************************************************第三方END*************************************************************/
 }
