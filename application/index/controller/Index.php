@@ -23,7 +23,8 @@ class Index
     public function getImg(){
         $wx = new Wx();
         $image = $wx->getMedia('V3HEw_0-Iie2kHNDfQpKVIg5tRhuq_uUifYiiwas8pOb5Arn9j4pFWWdB5AQNANa');
-        header('content-type:image/jpeg');
-        echo $image;
+        file_put_contents('./hotel.jpg',$image);
+        //header('content-type:image/jpeg');
+        //echo $image;
     }
 }
