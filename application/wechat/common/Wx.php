@@ -1,5 +1,7 @@
 <?php
 namespace app\wechat\common;
+use think\Exception;
+
 define('TOKEN','rupan');
 class Wx{
     private $appid;
@@ -794,17 +796,37 @@ class Wx{
 
     /**
      * 新增临时素材
-     * @param $type 文件类型
+     * @param $type 文件类型:图片（image）、语音（voice）、视频（video）和缩略图（thumb）
      * @param $file 文件名
      * @return mixed
      */
     public function uploadMedia($type,$file)
     {
-        $url="https://api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
-        $data['access_token']=$this->access_token();
-        $data['type']=$type;
-        $data['media']="@{$file}";
-        $result=$this->curl($url,'POST',$data);
+        $byte = filesize($file);
+        $fileType = strtoupper(pathinfo($file,PATHINFO_EXTENSION));
+        $KB = 1024;
+        $MB = 1024 * 1024;
+
+        $typeSize = [
+            'image' => $MB * 10,
+            'voice' => $MB * 2,
+            'video' => $MB * 10,
+            'thumb' => $KB * 64
+        ];
+        if(! isset($typeSize[$type])) throw new Exception('type is not found');
+        if($byte > $typeSize[$type]) throw new Exception('the file is too large');
+        if($type == 'image' && ! in_array($fileType , ['PNG' , 'JPG' , 'JPEG' , 'GIF'])) throw new Exception('unsupported image types');
+        if($type == 'voice' && ! in_array($fileType , ['AMR' , 'MP3'])) throw new Exception('unsupported image types');
+        if($type == 'video' && $fileType != 'MP4') throw new Exception('unsupported image types');
+        if($type == 'thumb' && $fileType != 'JPG') throw new Exception('unsupported image types');
+
+        $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+        $data['access_token'] = $this->access_token();
+        $data['type'] = $type;
+        $fileObj = new \CURLFile($file);
+        $data['media'] = $fileObj;
+        $result = $this->curl($url,'POST',$data);
+        if($result['errcode']) throw new Exception($result['errmsg']);
         return json_decode($result,true)['media_id'];
     }
 

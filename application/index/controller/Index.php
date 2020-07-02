@@ -13,4 +13,10 @@ class Index
     {
         return 'hello,' . $name;
     }
+
+    public function upload(){
+        $wx = new Wx();
+        $data = $wx->uploadMedia('image','./static/img/hotel.jpg');
+        print_r($data);
+    }
 }
