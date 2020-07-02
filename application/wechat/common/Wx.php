@@ -836,11 +836,15 @@ class Wx{
      */
     public function getMedia($media_id)
     {
-        $access_token=$this->access_token();
-        $url="https://api.weixin.qq.com/cgi-bin/media/get?access_token={$access_token}&media_id={$media_id}";
-        $image=$this->curl($url,'GET');
-        header('content-type:image/jpg');
-        echo $image;
+        $access_token = $this->access_token();
+        $url = "https://api.weixin.qq.com/cgi-bin/media/get?access_token={$access_token}&media_id={$media_id}";
+        $result = $this->curl($url,'GET');
+        if(isset($result['errcode'])) throw new Exception($result['errmsg']);
+        if(isset(json_decode($result)['video_url'])){
+            return json_decode($result)['video_url'];
+        }else{
+            return $result;
+        }
     }
 
     /**
