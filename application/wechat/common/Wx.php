@@ -321,10 +321,10 @@ class Wx{
                 $this->_doVoice($postObj);      //接收语音消息
                 ;break;
             case 'video':
-                $this->_doVideo($postObj);
+                $this->_doVideo($postObj);      //接收视频消息
                 ;break;
             case 'shortvideo':
-                $this->_doShortVideo($postObj);
+                $this->_doShortVideo($postObj);     //接收小视频消息
                 ;break;
             case 'location':
                 $this->_doLocation($postObj);       //接收位置消息
@@ -383,11 +383,11 @@ class Wx{
         $time=time();
         //图片地址
         $url=$postObj->PicUrl;
-        $pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
-        $sql="INSERT INTO photo VALUES ('{$toUser}','{$url}')";
-        $pdo->exec('set names utf8');
-        $pdo->exec($sql);
-        $content="亲，图片已保存，请<a href='http://wx.bilibilii.cn/photo.php?openid={$toUser}'>查看</a>";
+        //$pdo=new PDO('mysql:host=47.93.55.244;dbname=wechat','root','root');
+        //$sql="INSERT INTO photo VALUES ('{$toUser}','{$url}')";
+        //$pdo->exec('set names utf8');
+        //$pdo->exec($sql);
+        $content="斗图什么的还不擅长哦";
         $textTpl='<xml>
         <ToUserName><![CDATA[%s]]></ToUserName>
         <FromUserName><![CDATA[%s]]></FromUserName>
@@ -605,6 +605,56 @@ class Wx{
         <MsgType><![CDATA[text]]></MsgType>
         <Content><![CDATA[%s]]></Content>
         </xml>';
+        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
+        echo $textTpl;
+    }
+
+    /**
+     * 接收视频消息
+     * @param $postObj
+     */
+    public function _doVideo($postObj){
+        //客户端账号
+        $toUser=$postObj->FromUserName;
+        //公众平台账号
+        $fromUser=$postObj->ToUserName;
+        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
+        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
+        //当前时间
+        $time=time();
+        $textTpl='<xml>
+        <ToUserName><![CDATA[%s]]></ToUserName>
+        <FromUserName><![CDATA[%s]]></FromUserName>
+        <CreateTime>%s</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[%s]]></Content>
+        </xml>';
+        $str = "流量告急，不要发视频啦！";
+        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
+        echo $textTpl;
+    }
+
+    /**
+     * 接收小视频消息
+     * @param $postObj
+     */
+    public function _doShortVideo($postObj){
+        //客户端账号
+        $toUser=$postObj->FromUserName;
+        //公众平台账号
+        $fromUser=$postObj->ToUserName;
+        $mediaId = $postObj->MediaId;       //视频消息媒体id，可以调用获取临时素材接口拉取数据。
+        $thumbMediaId = $postObj->ThumbMediaId;     //视频消息缩略图的媒体id，可以调用多媒体文件下载接口拉取数据。
+        //当前时间
+        $time=time();
+        $textTpl='<xml>
+        <ToUserName><![CDATA[%s]]></ToUserName>
+        <FromUserName><![CDATA[%s]]></FromUserName>
+        <CreateTime>%s</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[%s]]></Content>
+        </xml>';
+        $str = "流量告急，不要发视频啦！";
         $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
         echo $textTpl;
     }
