@@ -19,4 +19,9 @@ class Index
         $data = $wx->uploadMedia('image','./static/img/hotel.jpg');
         print_r($data);
     }
+
+    public function getImg(){
+        $wx = new Wx();
+        $wx->getMedia('V3HEw_0-Iie2kHNDfQpKVIg5tRhuq_uUifYiiwas8pOb5Arn9j4pFWWdB5AQNANa');
+    }
 }
