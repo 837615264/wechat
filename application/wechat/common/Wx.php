@@ -826,7 +826,7 @@ class Wx{
         $fileObj = new \CURLFile($file);
         $data['media'] = $fileObj;
         $result = $this->curl($url,'POST',$data);
-        if($result['errcode']) throw new Exception($result['errmsg']);
+        if(isset($result['errcode'])) throw new Exception($result['errmsg']);
         return json_decode($result,true)['media_id'];
     }
 
