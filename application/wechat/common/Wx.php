@@ -330,7 +330,7 @@ class Wx{
                 $this->_doLocation($postObj);       //接收位置消息
                 ;break;
             case 'link':
-                $this->_doLink($postObj);
+                $this->_doLink($postObj);       //接收链接消息
                 ;break;
         }
     }
@@ -655,6 +655,32 @@ class Wx{
         <Content><![CDATA[%s]]></Content>
         </xml>';
         $str = "流量告急，不要发视频啦！";
+        $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
+        echo $textTpl;
+    }
+
+    /**
+     * 接收链接消息
+     * @param $postObj
+     */
+    public function _doLink($postObj){
+        //客户端账号
+        $toUser=$postObj->FromUserName;
+        //公众平台账号
+        $fromUser=$postObj->ToUserName;
+        $title = $postObj->Title;       //消息标题
+        $description = $postObj->Description;       //消息描述
+        $url = $postObj->Url;       //消息链接
+        //当前时间
+        $time=time();
+        $textTpl='<xml>
+        <ToUserName><![CDATA[%s]]></ToUserName>
+        <FromUserName><![CDATA[%s]]></FromUserName>
+        <CreateTime>%s</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[%s]]></Content>
+        </xml>';
+        $str = "主人说了，不可以打开不明链接！";
         $textTpl=sprintf($textTpl,$toUser,$fromUser,$time,$str);
         echo $textTpl;
     }
